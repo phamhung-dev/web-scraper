@@ -1,0 +1,41 @@
+version: '3.9'
+
+networks:
+  web-scraper:
+
+volumes:
+  web-scraper-server:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: .
+  web-scraper-db:
+
+services:
+  web-scraper-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${APP_NAME}-server:latest
+    container_name: ${APP_NAME}-server
+    volumes:
+      - web-scraper-server:/go/src/app
+    depends_on:
+      - web-scraper-db
+    networks:
+      - web-scraper
+
+  web-scraper-db:
+    image: bitnami/elasticsearch:latest
+    container_name: ${APP_NAME}-db
+    ports:
+      - 9200:9200
+      - 9300:9300
+    expose:
+      - 9200
+      - 9300
+    volumes:
+      - web-scraper-db:/bitnami/elasticsearch/data
+    networks:
+      - web-scraper
